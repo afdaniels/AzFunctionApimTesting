@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using AzFunctionApimTesting.Models;
+using Microsoft.Azure.Management.ApiManagement.Models;
 
 namespace AzFunctionApimTesting.Services
 {
-    internal interface IApimService
+    public interface IApimService
     {
+        BackendContract GetBackend(string name);
+        List<BackendModel> GetBackends();
+        List<BackendModel> TestBackEnds();
     }
 }

@@ -5,12 +5,11 @@ using AzFunctionApimTesting.Helpers;
 using AzFunctionApimTesting.Models;
 using Microsoft.Azure.Management.ApiManagement;
 using Microsoft.Azure.Management.ApiManagement.Models;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using Microsoft.Rest;
+using Microsoft.Azure.Management.ResourceManager.Fluent;
 
 namespace AzFunctionApimTesting.Services
 {
-    public class ApimService
+    public class ApimService : IApimService
     {
         private readonly string _resourceGroupName = Environment.GetEnvironmentVariable("RESOURCE_GROUP");
         private readonly string _serviceName = Environment.GetEnvironmentVariable("SERVICE_NAME");
@@ -57,15 +56,25 @@ namespace AzFunctionApimTesting.Services
 
         private ApiManagementClient ConfigureClient()
         {
-            var context = new AuthenticationContext("https://login.windows.net/" + _tenantId);
-            ClientCredential cc = new ClientCredential(_clientId, _clientSecret);
-            AuthenticationResult result = context.AcquireTokenAsync("https://management.azure.com/", cc).Result;
-            ServiceClientCredentials cred = new TokenCredentials(result.AccessToken);
-
-            return new ApiManagementClient(cred)
+            try
             {
-                SubscriptionId = _subscriptionId
-            };
+                var credentials = SdkContext.AzureCredentialsFactory
+                    .FromServicePrincipal(_clientId,
+                        _clientSecret,
+                        _tenantId,
+                        AzureEnvironment.AzureGlobalCloud);
+
+                return new ApiManagementClient(credentials)
+                {
+                    SubscriptionId = _subscriptionId
+                };
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            
         }
 
         private ApiManagementServiceResource ConfigureService()

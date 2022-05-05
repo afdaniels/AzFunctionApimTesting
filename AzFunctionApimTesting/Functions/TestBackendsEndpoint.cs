@@ -17,10 +17,12 @@ namespace AzFunctionApimTesting.Functions
     public class TestBackendsEndpoint
     {
         private readonly ILogger<TestBackendsEndpoint> _logger;
+        private readonly IApimService _apimService;
 
-        public TestBackendsEndpoint(ILogger<TestBackendsEndpoint> log)
+        public TestBackendsEndpoint(ILogger<TestBackendsEndpoint> log, IApimService apimService)
         {
             _logger = log;
+            _apimService = apimService;
         }
 
         [FunctionName("TestBackendsEndpoint")]
@@ -33,7 +35,8 @@ namespace AzFunctionApimTesting.Functions
             try
             {
                 _logger.LogCritical("");
-                var backendResults = new ApimService().TestBackEnds();
+                var backendResults = _apimService.TestBackEnds();
+                //var backendResults = new ApimService().TestBackEnds();
                 return Task.FromResult<IActionResult>(new OkObjectResult(backendResults));
             }
             catch (Exception e)
