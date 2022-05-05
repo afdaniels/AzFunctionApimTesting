@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AzFunctionApimTesting.Helpers;
 using AzFunctionApimTesting.Models;
 using Microsoft.Azure.Management.ApiManagement;
 using Microsoft.Azure.Management.ApiManagement.Models;
@@ -36,6 +37,22 @@ namespace AzFunctionApimTesting.Services
         {
             var backends = _client.Backend.ListByService(_resourceGroupName, _serviceName);
             return backends.Select(x => new BackendModel() {Name = x.Name, Url = x.Url}).ToList();
+        }
+
+        public List<BackendModel> TestBackEnds()
+        {
+            var backendResults = new List<BackendModel>();
+            var backends = _client.Backend.ListByService(_resourceGroupName, _serviceName);
+            foreach (var backend in backends)
+            {
+                var httpResult = HttpRequestHelper.HttpGetBackend(backend);
+                var result = new BackendModel();
+                result.Name = backend.Name;
+                result.Url = backend.Url;
+                result.Status = (int) httpResult.Result.StatusCode;
+                backendResults.Add(result);
+            }
+            return backendResults;
         }
 
         private ApiManagementClient ConfigureClient()

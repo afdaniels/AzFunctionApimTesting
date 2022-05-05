@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using System.Threading.Tasks;
 using AzFunctionApimTesting.Models;
@@ -27,10 +28,20 @@ namespace AzFunctionApimTesting.Functions
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "text/plain", bodyType: typeof(BackendModel), Description = "The OK response")]
         public Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req)
         {
-            var backends = new ApimService().GetBackends();
-            return Task.FromResult<IActionResult>(new OkObjectResult(backends));
+            try
+            {
+                _logger.LogCritical("");
+                var backendResults = new ApimService().TestBackEnds();
+                return Task.FromResult<IActionResult>(new OkObjectResult(backendResults));
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+                throw;
+            }
+            
         }
     }
 }
